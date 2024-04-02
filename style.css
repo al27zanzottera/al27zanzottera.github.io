@@ -5,7 +5,7 @@ body {
 }
 
 nav {
-    background-color: #DAF7A6; /* Cambia il colore di sfondo del menu */
+    background-color: #ebebe0; /* Cambia il colore di sfondo del menu */
     overflow: hidden;
     width: 100%; /* Il menu occupa tutta la larghezza */
     box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2); /* Aggiunge un'ombra per dare profondità */
