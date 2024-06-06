@@ -3,28 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SQL-Unione di più dataset </title>
+    <title>EDA-Dataset imdb_top_1000 </title>
     <link rel="stylesheet" href="stile.css">
 </head>
 <body>
     <header>
-        <h1>EDA - Dataset </h1>
+        <h1>EDA - Dataset IMDB_top_1000</h1>
     </header>
     <section>
         <div class="card">
             <h2>Riassunto</h2>
-            <p>In questo progetto, l'obiettivo era unire più dataset scaricati dalla piattaforma Kaggle tramite una query in linguaggio SQL. 
-                Per fare ciò, abbiamo innanzitutto creato il database e successivamente importato le tabelle dai vari file .csv. 
-                Le eventuali funzioni implementate sono state utilizzate per correggere i difetti che sono stati riscontrati al momento dell'implementazione della query,  come ad esempio il fatto che una tabella utilizzava come data di 
-                uscita l'intera data, mentre il resto dei dataset riportava solo l'anno.
-                Il risultato principale è stato l'aggregazione delle informazioni presenti in più dataset, creando un dataset più ricco di informazioni, utile per una successiva 
-                fase di esplorazione più approfondita. Viene riportato qui sotto il codice creato:</p>
-            <a href="Sql_1.ipynb"> Sql_1.ipynb </a>
+            <p>In questo progetto, è stata condotta un'<strong>Analisi Esplorativa dei Dati (EDA)</strong>, iniziando con la <strong>pulizia dei dati</strong> (correzione dei valori mancanti, associazione delle variabili alle loro tipologie corrette, ecc.). Successivamente, è stata effettuata un'<strong>analisi univariata</strong> per rispondere alle seguenti domande:</p>
+            <ul>
+              <li><strong>Qual è la distribuzione del voto IMDB assegnato ai film presenti nel dataset?</strong></li>
+              <li><strong>Qual è la distribuzione del punteggio Meta assegnato ai film presenti nel dataset?</strong></li>
+              <li><strong>Quali sono i generi più comuni tra i film nel dataset?</strong></li>
+              <li><strong>Come si distribuiscono gli anni di rilascio dei film?</strong></li>
+              <li><strong>Qual è la durata media dei film? Esiste una lunghezza più comune?</strong></li>
+            </ul>
+            <p>In seguito, è stata svolta una serie di <strong>analisi bivariate</strong> per esplorare:</p>
+            <ul>
+              <li><strong>Qual è la relazione tra il voto IMDB e il numero di recensioni?</strong></li>
+              <li><strong>Come varia l'IMDB score tra i registi top 5 per numero di film?</strong></li>
+              <li><strong>Come varia la durata dei film nei diversi generi?</strong></li>
+              <li><strong>Esiste una correlazione tra l'anno di rilascio e il voto IMDB?</strong></li>
+              <li><strong>Il voto IMDB influisce sul margine lordo del film?</strong></li>
+            </ul>
+            <p>Infine, è stata condotta un'<strong>analisi di correlazione</strong>.</p>
+
+            <a href="eda_imdb_top_1000.ipynb"> eda_imdb_top_1000.ipynb </a>
             <p>Dataset di riferimento: </p>
             <a href="https://www.kaggle.com/datasets/harshitshankhdhar/imdb-dataset-of-top-1000-movies-and-tv-shows">https://www.kaggle.com/datasets/harshitshankhdhar/imdb-dataset-of-top-1000-movies-and-tv-shows<a> 
-            <a href="https://www.kaggle.com/datasets/danielgrijalvas/movies">https://www.kaggle.com/datasets/danielgrijalvas/movies<a>
-            <a href="https://www.kaggle.com/datasets/tmdb/tmdb-movie-metadata?select=tmdb_5000_movies.csv">https://www.kaggle.com/datasets/tmdb/tmdb-movie-metadata?select=tmdb_5000_movies.csv<a>
-            <a href="https://www.kaggle.com/datasets/nliabzd/movies-imdb-and-bechdel-information">https://www.kaggle.com/datasets/nliabzd/movies-imdb-and-bechdel-information<a>   
         </div>
     </section>
 </body>
