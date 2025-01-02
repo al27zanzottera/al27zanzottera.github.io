@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="utf-8">
+    <title>Home</title>
+
+    <!-- CSS di Vis.js e Bootstrap -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/dist/vis-network.min.css" integrity="sha512-WgxfT5LWjfszlPHXRmBWHkV2eceiWTOBvrKCNbdgDYTHrT2AeLCGbF4sZlZw3UMN3WtL0tGUoIAKsu8mllg/XA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6"
+      crossorigin="anonymous"
+    />
+
+    <style type="text/css">
+        #mynetwork {
+            width: 100%;
+            height: 445px; 
+            background-color: #f8f9fa;
+            border: 1px solid #000;
+            position: relative;
+        }
+
+        body {
+            font-family: "Times New Roman", Times, serif;
+            background: #f8f9fa;
+            color: #333;
+        }
+
+        .header-title {
+            margin: 10px 0;
+            text-align: center;
+            color: #333;
+        }
+
+        .header-title h1 {
+            font-size: 1.5rem;
+        }
+
+        .description {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .navbar {
+            margin-bottom: 20px;
+        }
+
+        .nav-link:hover {
+            background-color: #eaeaea;
+            color: #000; 
+        }
+
+        .navbar-brand {
+            border: 1px solid #000; /* riquadro nero */
+            padding: 5px; 
+        }
+
+        .social-links {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .social-links a {
+            margin: 0 10px;
+            color: #555;
+            text-decoration: none;
+        }
+
+        .social-links a:hover {
+            text-decoration: underline;
+        }
+        #loader {
+            position: fixed;
+            top: 0; 
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.8);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            /* Eventuale icona o testo più carino */
+            font-size: 1.5rem; 
+            font-weight: bold;
+            color: #000;
+          }
+    </style>
+</head>
+
+<body>
+    <!-- Barra di navigazione con link a un altro HTML -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="home.html">Home</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" 
+                data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" 
+                aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+              <!-- Link a un altro file HTML, ad esempio about.html -->
+              <a class="nav-link active" aria-current="page" href="about_me.html">About me</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Titolo e descrizione -->
+    <div class="header-title">
+        <h1>Progetti</h1>
+    </div>
+    <div class="description">
+        <p>Questa sezione presenta una panoramica di tutti i progetti realizzati durante il percorso di laurea triennale e il primo periodo della laurea magistrale, oltre a quelli di natura extracurriculare. È possibile cliccare su ciascun progetto per accedere a una breve descrizione e al link per consultare i documenti o effettuare il download.</p>
+    </div>
+
+    <div class="card" style="width: 100%">
+        <div id="mynetwork" class="card-body"></div>
+    </div>
+  
+    <!-- Collegamenti ai social -->
+    <div class="social-links">
+        <p>Seguimi su LinkedIn:</p>
+        <a href="https://www.linkedin.com/in/alessio-zanzottera/" target="_blank">LinkedIn</a>
+    </div>
+
+    <!-- JS di Vis.js e Bootstrap -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/vis-network.min.js" integrity="sha512-LnvoEWDFrqGHlHmDD2101OrLcbsfkrzoSpvtSQtxK3RMnRV0eOkhhBN2dXHKRrUU8p2DGRTk35n4O8nWSVe1mQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf"
+      crossorigin="anonymous"
+    ></script>
+
+    <script type="text/javascript">
+        // Variabili globali.
+        var edges;
+        var nodes;
+        var allNodes;
+        var allEdges;
+        var nodeColors;
+        var originalNodes;
+        var network;
+        var container;
+        var options, data;
+        var filter = {
+            item : '',
+            property : '',
+            value : []
+        };
+        var highlightActive = false;
+        var filterActive = false;
+
+        function neighbourhoodHighlight(params) {
+          allNodes = nodes.get({ returnType: "Object" });
+
+          if (params.nodes.length > 0) {
+            highlightActive = true;
+            var selectedNode = params.nodes[0];
+            var degrees = 2;
+
+            for (let nodeId in allNodes) {
+              allNodes[nodeId].color = "rgba(200,200,200,0.5)";
+              if (allNodes[nodeId].hiddenLabel === undefined) {
+                allNodes[nodeId].hiddenLabel = allNodes[nodeId].label;
+                allNodes[nodeId].label = undefined;
+              }
+            }
+            var connectedNodes = network.getConnectedNodes(selectedNode);
+            var allConnectedNodes = [];
+
+            for (var i = 1; i < degrees; i++) {
+              for (var j = 0; j < connectedNodes.length; j++) {
+                allConnectedNodes = allConnectedNodes.concat(
+                  network.getConnectedNodes(connectedNodes[j])
+                );
+              }
+            }
+
+            for (i = 0; i < allConnectedNodes.length; i++) {
+              allNodes[allConnectedNodes[i]].color = "rgba(150,150,150,0.75)";
+              if (allNodes[allConnectedNodes[i]].hiddenLabel !== undefined) {
+                allNodes[allConnectedNodes[i]].label =
+                  allNodes[allConnectedNodes[i]].hiddenLabel;
+                allNodes[allConnectedNodes[i]].hiddenLabel = undefined;
+              }
+            }
+
+            for (i = 0; i < connectedNodes.length; i++) {
+              allNodes[connectedNodes[i]].color = nodeColors[connectedNodes[i]];
+              if (allNodes[connectedNodes[i]].hiddenLabel !== undefined) {
+                allNodes[connectedNodes[i]].label =
+                  allNodes[connectedNodes[i]].hiddenLabel;
+                allNodes[connectedNodes[i]].hiddenLabel = undefined;
+              }
+            }
+
+            allNodes[selectedNode].color = nodeColors[selectedNode];
+            if (allNodes[selectedNode].hiddenLabel !== undefined) {
+              allNodes[selectedNode].label = allNodes[selectedNode].hiddenLabel;
+              allNodes[selectedNode].hiddenLabel = undefined;
+            }
+          } else if (highlightActive === true) {
+            for (let nodeId in allNodes) {
+              allNodes[nodeId].color = nodeColors[nodeId];
+              if (allNodes[nodeId].hiddenLabel !== undefined) {
+                allNodes[nodeId].label = allNodes[nodeId].hiddenLabel;
+                allNodes[nodeId].hiddenLabel = undefined;
+              }
+            }
+            highlightActive = false;
+          }
+
+          var updateArray = [];
+          if (params.nodes.length > 0) {
+            for (let nodeId in allNodes) {
+              if (allNodes.hasOwnProperty(nodeId)) {
+                updateArray.push(allNodes[nodeId]);
+              }
+            }
+            nodes.update(updateArray);
+          } else {
+            for (let nodeId in allNodes) {
+              if (allNodes.hasOwnProperty(nodeId)) {
+                updateArray.push(allNodes[nodeId]);
+              }
+            }
+            nodes.update(updateArray);
+          }
+        }
+
+        function filterHighlight(params) {
+          allNodes = nodes.get({ returnType: "Object" });
+          if (params.nodes.length > 0) {
+            filterActive = true;
+            let selectedNodes = params.nodes;
+
+            for (let nodeId in allNodes) {
+              allNodes[nodeId].hidden = true;
+              if (allNodes[nodeId].savedLabel === undefined) {
+                allNodes[nodeId].savedLabel = allNodes[nodeId].label;
+                allNodes[nodeId].label = undefined;
+              }
+            }
+
+            for (let i=0; i < selectedNodes.length; i++) {
+              allNodes[selectedNodes[i]].hidden = false;
+              if (allNodes[selectedNodes[i]].savedLabel !== undefined) {
+                allNodes[selectedNodes[i]].label = allNodes[selectedNodes[i]].savedLabel;
+                allNodes[selectedNodes[i]].savedLabel = undefined;
+              }
+            }
+
+          } else if (filterActive === true) {
+            for (let nodeId in allNodes) {
+              allNodes[nodeId].hidden = false;
+              if (allNodes[nodeId].savedLabel !== undefined) {
+                allNodes[nodeId].label = allNodes[nodeId].savedLabel;
+                allNodes[nodeId].savedLabel = undefined;
+              }
+            }
+            filterActive = false;
+          }
+
+          var updateArray = [];
+          if (params.nodes.length > 0) {
+            for (let nodeId in allNodes) {
+              if (allNodes.hasOwnProperty(nodeId)) {
+                updateArray.push(allNodes[nodeId]);
+              }
+            }
+            nodes.update(updateArray);
+          } else {
+            for (let nodeId in allNodes) {
+              if (allNodes.hasOwnProperty(nodeId)) {
+                updateArray.push(allNodes[nodeId]);
+              }
+            }
+            nodes.update(updateArray);
+          }
+        }
+
+        function selectNode(nodesSelection) {
+          network.selectNodes(nodesSelection);
+          neighbourhoodHighlight({ nodes: nodesSelection });
+          return nodesSelection;
+        }
+
+        function selectNodes(nodesSelection) {
+          network.selectNodes(nodesSelection);
+          filterHighlight({nodes: nodesSelection});
+          return nodesSelection;
+        }
+
+        function highlightFilter(filter) {
+          let selectedNodes = []
+          let selectedProp = filter['property']
+          if (filter['item'] === 'node') {
+            let allN = nodes.get({ returnType: "Object" });
+            for (let nodeId in allN) {
+              if (allN[nodeId][selectedProp] && filter['value'].includes((allN[nodeId][selectedProp]).toString())) {
+                selectedNodes.push(nodeId)
+              }
+            }
+          }
+          else if (filter['item'] === 'edge'){
+            let allE = edges.get({returnType: 'object'});
+            for (let edge in allE) {
+              if (allE[edge][selectedProp] && filter['value'].includes((allE[edge][selectedProp]).toString())) {
+                selectedNodes.push(allE[edge]['from'])
+                selectedNodes.push(allE[edge]['to'])
+              }
+            }
+          }
+          selectNodes(selectedNodes)
+        }
+
+        // Funzione per disegnare il grafo
+        function drawGraph() {
+            var container = document.getElementById('mynetwork');
+
+        nodes = new vis.DataSet([
+          {
+            id: "001",
+            label: "Esplorazione del dataset 'IBM HR Analytics' mediante analisi supervisionata e non supervisionata",
+            shape: "dot",
+            borderWidth: 2,
+            color: {
+              border: "#000",
+              background: "transparent"
+            },
+            font: { color: "black" },
+            value: 1,
+
+            description: "Tesi di laurea. Nella pagina web dedicata, è disponibile un breve abstract che sintetizza i principali obiettivi e risultati del lavoro svolto. Su richiesta, sono disponibile a fornire il testo completo della tesi.In collaborazione con il Professore Luca Mari",
+            downloadLink: "https://www.youtube.com/"
+          },
+          {
+            id: "002",
+            label: "Progetto BPR - Corti F.lli Metalmeccanica S.r.l",
+            shape: "dot",
+            borderWidth: 2,
+            color: {
+              border: "#000",
+              background: "transparent"
+            },
+            font: { color: "black" },
+            value: 1,
+
+            description: "Progetto di Business Process Reengineering per un'azienda del settore metalmeccanico. Svolto nell'ambito dell'insegnamento di: Gestione e controllo dei processi aziendali, il progetto ha riguardato l'analisi e l'ottimizzazione dei processi aziendali, con un focus specifico su due fasi critiche: la gestione degli ordini e della produzione, e la spedizione degli ordini. Attraverso la mappatura e il monitoraggio del processo attuale (AS-IS), è stata elaborata una proposta di miglioramento (TO-BE) finalizzata alla riduzione dei tempi operativi e all'implementazione ottimale di tecnologie basate sull'intelligenza artificiale. Il progetto ha inoltre considerato un'analisi preliminare dei costi associati alle soluzioni proposte.In collaborazione con i Riccardo Monolo e Riccardo Albé.",
+            downloadLink: "https://www.youtube.com/"
+          },
+          {
+            id: "003",
+            label: "EDA - Dataset IMDB_top_1000",
+            shape: "dot",
+            borderWidth: 2,
+            color: {
+              border: "#000",
+              background: "transparent"
+            },
+            font: { color: "black" },
+            value: 1,
+
+            description: "Progetto di Analisi Esplorativa dei Dati (EDA). Nel corso del progetto, è stata condotta un'approfondita Analisi Esplorativa dei Dati (EDA), articolata in diverse fasi.Una prima fase di Correzione di valori mancanti e Associazione delle variabili alle tipologie corrette. L'analisi univariata si è concentrata su diverse domande chiave, tra cui:Qual è la distribuzione del voto IMDB assegnato ai film presenti nel dataset?;Qual è la distribuzione del punteggio Meta assegnato ai film presenti nel dataset?; Quali sono i generi più comuni tra i film nel dataset?;Come si distribuiscono gli anni di rilascio dei film?;Qual è la durata media dei film? Esiste una lunghezza più comune? Successivamente, è stata effettuata un'analisi bivariata per esplorare le seguenti relazioni: Correlazione tra il voto IMDB e il numero di recensioni, Variazione del punteggio IMDB tra i registi top 5 per numero di film, Differenze nella durata dei film tra i diversi generi, Relazione tra l'anno di rilascio e il voto IMDB e Influenza del voto IMDB sul margine lordo del film. Infine, è stata condotta un'analisi di correlazione per identificare eventuali relazioni significative tra le variabili del dataset.",
+            downloadLink: "https://www.youtube.com/"
+          },
+          {
+            id: "004",
+            label: "Tesla supercharger network",
+            shape: "dot",
+            borderWidth: 2,
+            color: {
+              border: "#000",
+              background: "transparent"
+            },
+            font: { color: "black" },
+            value: 1,
+
+            description: "Progetto di mappatura della rete Tesla Supercharger. Svolto nell'ambito dell'insegnamento Metodi Matematici per le Applicazioni Industriali, il progetto ha riguardato l'analisi della rete dei Tesla Supercharger, con un focus su caratteristiche strutturali e scenari di resilienza. È stata condotta un'analisi approfondita utilizzando indicatori di teoria dei grafi, quali: Betweenness Centrality: per identificare i nodi critici nella connessione tra le diverse parti della rete; Closeness Centrality: per valutare l'accessibilità dei nodi rispetto all'intera rete;Indice di Clustering: per analizzare la densità locale delle connessioni nella rete. Sono stati esplorati scenari ipotetici in cui nodi fondamentali (nodi ponte) tra il nord e il sud della rete risultassero inaccessibili. L'analisi ha permesso di valutare l'impatto di tali eventi sulla connettività complessiva e sulla resilienza della rete. In collaborazione con Giorgio Premoli e Giorgio Cunardi.",
+            downloadLink: "https://www.youtube.com/"
+          },
+          {
+            id: "005",
+            label: "Ottimizzazione processo di selezione ",
+            shape: "dot",
+            borderWidth: 2,
+            color: {
+              border: "#000",
+              background: "transparent"
+            },
+            font: { color: "black" },
+            value: 1,
+
+            description: "Progetto per l'Hackathon Digitiamo - Quarta Edizione. Realizzato in collaborazione con Carrefour durante l'evento del 14-15 novembre, il progetto ha affrontato l'analisi e l'ottimizzazione del processo di recruiting, con particolare attenzione agli aspetti legati all'equità e alla comunicazione tra le parti coinvolte. È stata condotta una mappatura dettagliata dello stato attuale del processo di recruiting, identificando criticità e opportunità di miglioramento. L'analisi si è focalizzata su tre obiettivi principali: Offrire nuovi spunti di riflessione per i recruiter, al fine di migliorare la qualità della selezione; Ridurre le ambiguità nella comunicazione tra datore di lavoro e recruiter; Eliminare i bias legati a genere, etnia e aspetto personale, che possono influenzare negativamente le decisioni nella fase di selezione. È stata proposta una nuova versione del processo, che include una fase aggiuntiva centrata sul datore di lavoro. Questa fase prevede una valutazione del datore stesso, basata sul modo in cui si pone e risponde durante l'interazione con i candidati, promuovendo un approccio più bilanciato e trasparente. In collaborazione con Giorgio Premoli",
+            downloadLink: "https://www.youtube.com/"
+          },
+          {
+            id: "006",
+            label: "Progettazione sistema dinamico attività commerciale (Caso studio: Fumetteria La gilda)",
+            shape: "dot",
+            borderWidth: 2,
+            color: {
+              border: "#000",
+              background: "transparent"
+            },
+            font: { color: "black" },
+            value: 1,
+
+            description: "Progetto di sviluppo di un sistema dinamico per un'attività commerciale. Il progetto, incentrato su una fumetteria, è stato realizzato come parte del corso Progettazione per Sistemi Dinamici utilizzando il software STGraph, messo a disposizione dal professor Luca Mari. Sebbene il progetto presenti un carattere preliminare (rough-cut) a causa dei tempi limitati, sono state seguite fasi metodiche per la sua realizzazione. È stata condotta un'intervista approfondita con i proprietari della fumetteria per comprendere dinamiche interne altrimenti non osservabili dall'esterno. Durante l'intervista sono stati raccolti dati utili per la modellizzazione del sistema dinamico. Sulla base delle informazioni raccolte, il sistema dinamico è stato sviluppato utilizzando STGraph, un software dedicato fornito dal docente. Il progetto simula e analizza le dinamiche operative e gestionali della fumetteria, consentendo di visualizzare scenari futuri e individuare potenziali aree di ottimizzazione. Il sistema può essere aperto tramite STGraph, un programma scaricabile gratuitamente dal repository GitHub del professor Luca Mari. In collaborazione con Fumetteria La gilda",
+            downloadLink: "https://www.youtube.com/"
+          }
+        ]);
+
+
+        edges = new vis.DataSet([
+          {from: "001",to: "002"},
+          {from: "001",to: "006"},
+          {from: "001",to: "003"},
+          {from: "001",to: "005"},
+          {from: "001",to: "004"},
+          {from: "002",to: "004"},
+          {from: "003",to: "006"},
+          {from: "004",to: "005"},
+          {from: "004",to: "006"},
+          {from: "005",to: "006"},
+
+
+
+        ]);
+
+            nodeColors = {};
+            allNodes = nodes.get({ returnType: "Object" });
+            for (var nodeId in allNodes) {
+              nodeColors[nodeId] = allNodes[nodeId].color;
+            }
+            allEdges = edges.get({ returnType: "Object" });
+
+            data = {nodes: nodes, edges: edges};
+
+            var options = {
+                edges: {
+                    color: '#000',
+                    smooth: false     
+                },
+                "physics": {
+                    "forceAtlas2Based": {
+                        "gravitationalConstant": -100,
+                        "centralGravity": 0.001,
+                        "springLength": 150,
+                        "springConstant": 0.18,
+                        "damping": 0.4,
+                        "avoidOverlap": 3
+                    },
+                    "maxVelocity": 146,
+                    "solver": "forceAtlas2Based",
+                    "timestep": 0.35,
+                    "stabilization": {
+                        "enabled": true,
+                        "iterations": 200,
+                        "updateInterval": 25
+                    }
+                }
+            };
+
+            network = new vis.Network(container, data, options);
+            network.on("doubleClick", function(params) {
+              
+              
+              if (params.nodes.length === 1) {
+                let clickedNodeId = params.nodes[0];
+
+                let clickedNodeData = nodes.get(clickedNodeId);
+
+                window.open(clickedNodeData.downloadLink, "_blank");
+                alert(
+                  "Progetto: " + clickedNodeData.label + "\n" +
+                  "Descrizione: " + clickedNodeData.description
+
+                );
+              }
+              
+            });
+
+            return network;
+        }
+
+        drawGraph();
+    </script>
+  <script>
+    window.addEventListener("load", function() {
+      document.getElementById("loader").style.display = "none";
+    });
+  
+    document.addEventListener("DOMContentLoaded", function() {
+      var allLinks = document.querySelectorAll("a");
+      var loader   = document.getElementById("loader");
+      
+      allLinks.forEach(function(link) {
+        link.addEventListener("click", function(e) {
+          // Se vuoi che il loader appaia solo su link esterni o link normali,
+          // salta quelli con target="_blank" o gli anchor (#).
+          // Esempio, se non vuoi bloccare i link che aprono altre tab:
+          if (link.target === "_blank") return; 
+
+          // Previeni la navigazione immediata
+          e.preventDefault();
+
+          // Mostra il loader
+          if (loader) {
+            loader.style.display = "flex";
+          }
+
+          // Aspetta X millisecondi, poi vai alla pagina
+          setTimeout(function() {
+            window.location.href = link.href; 
+          }, 500); // ad esempio 2 secondi
+        });
+      });
+    });
+
+  </script>
+
+  <div id="loader" style="display: none;">
+    <p>Caricamento...</p>
+  </div>
+</body>
+</html>
